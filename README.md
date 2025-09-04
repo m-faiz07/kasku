@@ -1,76 +1,160 @@
-Kasku — Catatan Kas Sederhana (Expo Router)
+# Kasku — Buku Kas Kelas (Expo + MongoDB)
 
-Ringkas: Expo + React Native + TypeScript. State disimpan dengan Zustand + persist (AsyncStorage). Tanpa alias babel (pakai relative imports saja).
+Kasku adalah aplikasi buku kas kelas yang fokus pada kemudahan pencatatan pemasukan/pengeluaran, pengelolaan anggota, dan iuran bulanan. Aplikasi mobile dibangun dengan Expo Router + React Native (TypeScript), sedangkan data tersimpan di MongoDB Atlas melalui API Node/Express yang ringan.
 
-Fitur utama
-- Transaksi masuk/keluar, saldo diklem ke 0 secara visual (Home, Statistik).
-- Anggota (aktif/nonaktif/hapus) dengan iuran bulanan. Generate tagihan UNPAID per bulan. Tandai lunas (bulk) akan menambah transaksi pemasukan kategori "Iuran".
-- Export CSV semua transaksi dari tab Statistik.
- - Mode server: data tersimpan di MongoDB Atlas via API Node.
+• Cepat digunakan • Tampilan minimalis • Siap produksi
 
-Persyaratan
-- Node.js LTS, Expo CLI.
-- iOS: Xcode (macOS), Android: Android Studio/Emulator.
+---
 
-Script npm (app)
-- `npm run clean` — jalankan Metro dengan cache bersih (`expo start -c`).
-- `npm run start` — jalankan dev server.
-- `npm run android` — buka di emulator/perangkat Android.
-- `npm run ios` — buka di simulator iOS.
-- `npm run web` — buka di web (dev).
+## Fitur Utama
+- Transaksi masuk/keluar; saldo pada Home/Statistik ditampilkan “diklem” ke 0 (visual).
+- Anggota (aktif/nonaktif/hapus); generate tagihan iuran per bulan (idempoten).
+- Bulk “Tandai Lunas” untuk iuran; otomatis membuat transaksi pemasukan kategori “Iuran”.
+- Export CSV di tab Statistik (share sheet mobile; fallback path di web/dev).
+- Mode server: data tersimpan di MongoDB Atlas melalui API (tanpa penyimpanan lokal offline).
+- Aksesibilitas dasar (label tombol, ukuran tap); locale `id-ID` untuk tanggal dan mata uang.
 
-Konfigurasi App
-- `app.json` sudah berisi `name`, `slug`, `icon`, `splash`, skema `kasku`, dan edge-to-edge Android.
-- Izin minimum: tidak ada akses kamera/mikrofon. Modul yang digunakan: AsyncStorage, FileSystem, Sharing, dsb.
+## Arsitektur Singkat
+- App (Expo Router): TypeScript, Zustand (state memori, tanpa persist).
+- API (Node/Express): endpoint CRUD + logika generate iuran dan bulk paid.
+- Database: MongoDB Atlas.
 
-Export CSV (Statistik)
-- Tombol "Export CSV" menulis file CSV ke direktori dokumen/cache dan memunculkan share sheet (mobile).
+Struktur folder:
+- `app/` (layar/tabs), `components/`, `lib/` (store, util, api client)
+- `server/` (Express + MongoDB driver)
+
+## Teknologi
+- React Native (Expo), Expo Router, TypeScript
+- Zustand, expo-file-system, expo-sharing
+- Node.js, Express, MongoDB driver
+
+---
+
+## Menjalankan Secara Lokal
+### 1) Persyaratan
+- Node.js LTS, Android Studio/iOS Simulator (opsional), MongoDB Atlas Cluster.
+
+### 2) Konfigurasi Environment
+- Server: salin `server/.env.example` → `server/.env`, lalu isi:
+  - `MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/`
+  - `DB_NAME=kasku`
+  - `PORT=4000`
+  - `API_KEY=` (kosongkan saat dev agar mudah)
+- App (opsional): salin `.env.example` → `.env` jika ingin menjalankan dengan skrip `*:env`.
+
+### 3) Jalankan Server
+```
+cd server
+npm install
+npm run dev
+```
+Cek health: `http://<IP-PC>:4000/health` → `{ ok: true }`
+
+### 4) Jalankan App
+```
+npm run start
+```
+- Base URL default diambil dari `app.json > expo.extra.apiBaseUrl`.
+- Android emulator: alamat `localhost` otomatis dipetakan ke `10.0.2.2` oleh `lib/api.ts`.
+- Perangkat fisik: set `apiBaseUrl` ke IP LAN PC Anda (contoh `http://192.168.1.10:4000`).
+
+Skrip terkait di root:
+- App: `npm run clean` | `npm run start` | `npm run android` | `npm run ios`
+- Server: `npm run server:dev` | `npm run server:build` | `npm run server:start`
+
+---
+
+## Konfigurasi App (Expo)
+- `app.json` memuat `name`, `slug`, icons, splash, dan `extra.apiBaseUrl`.
+- (Opsional) set `extra.apiKey` agar app mengirim header `x-api-key` ke server.
+
+## Keamanan & CORS (Server)
+- `API_KEY` (opsional): jika diisi, server mewajibkan header `x-api-key` untuk semua endpoint (kecuali `/health`).
+- `CORS_ORIGINS`: daftar origin yang diizinkan (dipisahkan koma). Kosong → allow all (dev). Isi domain Anda untuk produksi.
+
+---
+
+## API Singkat
+Header umum (opsional): `x-api-key: <your-key>`
+
+Members
+- `GET /members`
+- `POST /members` body: `{ name, nim?, phone? }`
+- `PATCH /members/:id` body: `{ name?, nim?, phone?, active? }`
+- `DELETE /members/:id`
+
+Dues (Nominal Iuran)
+- `GET /dues/amount` → `{ duesAmount }`
+- `POST /dues/amount` body: `{ amount: number }`
+
+Bills (Tagihan Iuran)
+- `GET /bills?ym=YYYY-MM`
+- `POST /bills/generate` body: `{ ym? }` (default bulan berjalan)
+- `POST /bills/bulkPaid` body: `{ memberIds: string[], ym: string }`
+
+Transactions
+- `GET /txs[?ym=YYYY-MM]`
+- `POST /txs` body: `{ type: 'in'|'out', amount, category?, note?, date, memberId? }`
+- `DELETE /txs/:id`
+
+---
+
+## Model Data
+- Member: `{ id, name, nim?, phone?, active }`
+- DuesBill: `{ id, memberId, ym, amount, status: 'UNPAID'|'PAID'|'WAIVED' }`
+- Tx: `{ id, type: 'in'|'out', amount, category?, note?, date(ISO), memberId? }`
+
+---
+
+## Export CSV (Statistik)
+- Tombol “Export CSV” menulis file ke direktori dokumen/cache dan memunculkan share sheet (mobile).
 - Header kolom: `id,type,amount,category,note,date,memberId`.
-- Fallback web/dev: path file ditampilkan di layar bila share sheet tidak tersedia.
+- Fallback web/dev: menampilkan path file di layar.
 
-Backend (API + MongoDB)
-- Kode server ada di `server/` (Express + MongoDB driver).
-- Endpoint utama:
-  - GET/POST/PATCH/DELETE `/members`
-  - GET `/bills?ym=YYYY-MM`, POST `/bills/generate`, POST `/bills/bulkPaid`
-  - GET `/dues/amount`, POST `/dues/amount`
-  - GET `/txs[?ym]`, POST `/txs`, DELETE `/txs/:id`
-- Konfigurasi env (server): `MONGODB_URI`, `DB_NAME`.
-  - Keamanan produksi:
-    - `API_KEY`: aktifkan proteksi header `x-api-key` (server menolak jika tidak cocok).
-    - `CORS_ORIGINS`: daftar origin yang diizinkan (dipisahkan koma). Jika kosong → allow all (dev).
-  - Contoh file: `server/.env.example` (salin ke `server/.env`).
-  - Jalankan cepat: `npm run server:dev` (membaca `server/.env`).
-- Script server: di `server/` jalankan `npm i`, lalu `npm run dev`. Default listen `:4000`.
-- App membaca base URL dari `app.json > expo.extra.apiBaseUrl` (default `http://localhost:4000`). Untuk produksi, ubah ke domain API Anda.
-- App dapat mengirim `x-api-key` bila di-set:
-  - `app.json > expo.extra.apiKey` atau env `EXPO_PUBLIC_API_KEY` saat build.
-  - Contoh file: `.env.example` (salin ke `.env`) lalu gunakan skrip `start:env`/`android:env`/`ios:env`.
+---
 
-QA Fungsional (Smoke Test)
+## QA Fungsional (Checklist)
 1) Iuran
-   - Tambah 3 anggota (aktif), set iuran 20000.
-   - Generate tagihan untuk bulan aktif.
-   - Pilih sebagian lalu "Tandai Lunas (Bulk)". Periksa transaksi pemasukan kategori "Iuran" dibuat dengan catatan `Iuran YYYY-MM - Name`.
+   - Tambah 3 anggota (aktif), set iuran 20000, generate bulan aktif → bill muncul.
+   - Bulk “Tandai Lunas” untuk sebagian → Tx pemasukan kategori “Iuran” dibuat (`note: Iuran YYYY-MM - Name`).
 2) Blokir OUT
-   - Coba tambah transaksi `out` melebihi saldo global. Tombol simpan harus nonaktif dan/atau muncul peringatan.
-3) Generate idempoten + aktif/nonaktif
-   - Ganti bulan iuran, generate lagi (bill tidak duplikat untuk bulan yang sama).
-   - Nonaktifkan satu anggota lalu generate lagi: anggota nonaktif tidak dibuatkan bill.
+   - Tambah transaksi OUT melebihi saldo global → tombol simpan nonaktif/peringatan muncul.
+3) Idempoten + aktif/nonaktif
+   - Ganti bulan lalu generate → tidak ada duplikasi untuk kombinasi (member, ym) yang sama.
+   - Nonaktifkan 1 member lalu generate → member nonaktif tidak dibuat bill.
 4) Hapus anggota
-   - Hapus salah satu anggota; tagihan terkait menghilang dari daftar.
+   - Hapus 1 member → bill terkait hilang dari daftar.
 5) Regresi saldo diklem
-   - Home dan Statistik menampilkan saldo yang diklem ke 0 secara visual.
+   - Home/Statistik: saldo tampil diklem ke 0 (visual).
 
-Rilis (EAS)
-- Opsional: `eas build -p android --profile preview` untuk uji; `--profile production` untuk rilis.
-- Pastikan login ke Expo dan sudah menginisialisasi EAS (`eas login`, `eas init`).
+---
 
-Tips
-- Jika terjadi error aneh saat hot reload, jalankan `npm run clean`.
-- Error runtime tidak mematikan app; lihat log pada Metro/console dev.
+## Aksesibilitas & Performa
+- A11y: label pada tombol utama, ukuran tap memadai, locale `id-ID` untuk tanggal/mata uang.
+- Performa: FlatList dengan keyExtractor stabil; kalkulasi difilter/memo sesuai kebutuhan.
 
-Catatan migrasi ke MongoDB (tanpa lokal)
-- Store lokal (Zustand) sekarang bertindak sebagai cache memori; data sumber kebenaran ada di server.
-- App melakukan sinkronisasi awal pada startup (`app/_layout.tsx`).
-- Tidak ada AsyncStorage/persist; jika offline, data tidak termuat. Pertimbangkan penanganan offline di masa depan bila diperlukan.
+---
+
+## Deploy
+Server (contoh Render/Railway/Cloud Run):
+- Root: `server/`, Build: `npm install && npm run build`, Start: `npm run start`
+- Env: `MONGODB_URI`, `DB_NAME`, `API_KEY`, `CORS_ORIGINS`
+
+App (EAS):
+- Set `expo.extra.apiBaseUrl` ke URL API produksi dan (opsional) `expo.extra.apiKey`.
+- `eas build -p android --profile production` (dan iOS bila perlu)
+
+---
+
+## Troubleshooting
+- Android emulator: gunakan `10.0.2.2` untuk mengakses host (di-handle otomatis).
+- Perangkat fisik tidak bisa akses API lokal:
+  - Gunakan IP LAN PC untuk `apiBaseUrl` (mis. `http://192.168.x.x:4000`).
+  - Izinkan port 4000/Node.js di Windows Firewall (Private network).
+  - Matikan AP/Client isolation di router Wi‑Fi.
+- 401 Unauthorized: pastikan `x-api-key` di app sama dengan `API_KEY` server.
+
+---
+
+## Kontribusi
+Pull Request dipersilakan untuk perbaikan bug, docs, dan peningkatan UX. Untuk fitur besar (mis. multi buku kas, autentikasi pengguna), buka diskusi terlebih dahulu.
