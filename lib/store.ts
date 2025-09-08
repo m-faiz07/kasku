@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { ymKey } from "./format";
 import { api } from "./api";
+import { useToast } from "./toast";
 
 export type Tx = {
   id: string;
@@ -39,12 +40,14 @@ export const useStore = create<State>()((set, get) => ({
     void (async () => {
       const created = await api.addTx(t);
       set((s) => ({ txs: [created, ...s.txs] }));
+      useToast.getState().success("Transaksi ditambahkan");
     })();
   },
   deleteTx: (id) => {
     void (async () => {
       await api.deleteTx(id);
       set((s) => ({ txs: s.txs.filter((x) => x.id !== id) }));
+      useToast.getState().success("Transaksi dihapus");
     })();
   },
   byMonth: (ym) => {

@@ -1,0 +1,45 @@
+flowchart TD
+  P0[/All /me* require auth/]
+
+  %% Get profile
+  PM1[GET /me] --> PM2[Find user by _id=sub]
+  PM2 --> PM3{Found?}
+  PM3 -->|No| PM4[404 Not found]
+  PM3 -->|Yes| PM5[Return id,email,name]
+
+  %% Update name
+  PN1[PATCH /me] --> PN2[Validate name]
+  PN2 --> PN3[findOneAndUpdate]
+  PN3 --> PN4{Found?}
+  PN4 -->|No| PN5[404]
+  PN4 -->|Yes| PN6[Return updated user]
+
+  %% Update email
+  PE1[PATCH /me/email] --> PE2[Validate email+password]
+  PE2 --> PE3[Load user]
+  PE3 --> PE4[Compare password]
+  PE4 --> PE5{OK?}
+  PE5 -->|No| PE6[400 Password salah]
+  PE5 -->|Yes| PE7[Ensure new email unique]
+  PE7 --> PE8{Unique?}
+  PE8 -->|No| PE9[409 Email sudah digunakan]
+  PE8 -->|Yes| PE10[Update email]
+  PE10 --> PE11[Sign new token]
+  PE11 --> PE12[Return token + user]
+
+  %% Update password
+  PP1[PATCH /me/password] --> PP2[Validate old/new]
+  PP2 --> PP3[Load user]
+  PP3 --> PP4[Compare old password]
+  PP4 --> PP5{OK?}
+  PP5 -->|No| PP6[400 Password lama salah]
+  PP5 -->|Yes| PP7[Hash new password]
+  PP7 --> PP8[Update]
+  PP8 --> PP9[Return ok]
+
+  %% Upload avatar
+  PA1[POST /me/avatar] --> PA2[Validate data URL image png/jpeg/jpg]
+  PA2 --> PA3[Decode base64]
+  PA3 --> PA4[Write file to uploads/avatars/userId.ext]
+  PA4 --> PA5[Update users.avatar with relative URL]
+  PA5 --> PA6[Return avatarUrl]

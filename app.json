@@ -36,7 +36,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiBaseUrl": "http://192.168.68.76:4000",
+      "apiBaseUrl": "http://192.168.68.69:4000",
       "apiKey": "change-me-in-prod"
     }
   }

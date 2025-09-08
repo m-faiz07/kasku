@@ -4,6 +4,7 @@ import { useStore } from "../../lib/store";
 import { toIDR, ymKey } from "../../lib/format";
 import TxItem from "../../components/TxItem";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { fs, ms } from "../../lib/responsive";
 
 export default function Home() {
   const { txs, totals, deleteTx } = useStore();
@@ -23,8 +24,8 @@ export default function Home() {
     <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1, backgroundColor: "#f3f4f6" }}>
       <View style={{ flex: 1, padding: 16 }}>
         <View style={{ backgroundColor: "white", borderRadius: 16, padding: 16, marginBottom: 12 }}>
-          <Text style={{ color: "#6b7280" }}>Saldo Bulan {currentYM}</Text>
-          <Text style={{ fontSize: 28, fontWeight: "800", marginTop: 6 }}>
+          <Text style={{ color: "#6b7280", fontSize: fs(12) }}>Saldo Bulan {currentYM}</Text>
+          <Text style={{ fontSize: fs(26), fontWeight: "800", marginTop: 6 }}>
             {toIDR(safeBalance)}
           </Text>
           <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
@@ -42,13 +43,13 @@ export default function Home() {
                 accessibilityLabel={`Tampilkan transaksi bulan ${item}`}
                 onPress={() => setCurrentYM(item)}
                 style={{
-                  paddingVertical: 6,
-                  paddingHorizontal: 10,
+                  paddingVertical: ms(6),
+                  paddingHorizontal: ms(10),
                   borderRadius: 999,
                   backgroundColor: item === currentYM ? "#111827" : "#e5e7eb",
                 }}
               >
-                <Text style={{ color: item === currentYM ? "white" : "#111827", fontWeight: "600" }}>{item}</Text>
+                <Text style={{ color: item === currentYM ? "white" : "#111827", fontWeight: "600", fontSize: fs(12) }}>{item}</Text>
               </Pressable>
             )}
           />

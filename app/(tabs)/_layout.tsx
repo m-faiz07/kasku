@@ -1,6 +1,8 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ms, fs, isTablet } from "../../lib/responsive";
 
 const tint = {
   active: "#111827",
@@ -14,19 +16,27 @@ function icon(name: keyof typeof Ionicons.glyphMap) {
 }
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const baseHeight = ms(54, 0.4);
+  const bottomInset = Math.max(insets.bottom, 0);
+  const tabBarHeight = baseHeight + bottomInset;
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: tint.active,
         tabBarInactiveTintColor: tint.inactive,
-        tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
-        tabBarStyle: { height: 60 },
+        tabBarLabelStyle: { fontSize: fs(11), marginBottom: isTablet() ? 2 : 4 },
+        tabBarStyle: {
+          height: tabBarHeight,
+          paddingBottom: bottomInset > 0 ? bottomInset : (isTablet() ? 6 : 2),
+        },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Home", tabBarIcon: icon("home-outline") }}
+        options={{ title: "Beranda", tabBarIcon: icon("home-outline") }}
       />
       <Tabs.Screen
         name="add"
@@ -38,12 +48,16 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="members"
-        options={{ title: "Members", tabBarIcon: icon("people-outline") }}
+        options={{ title: "Anggota", tabBarIcon: icon("people-outline") }}
       />
         
       <Tabs.Screen
         name="stats"
         options={{ title: "Statistik", tabBarIcon: icon("stats-chart-outline") }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profil", tabBarIcon: icon("person-circle-outline") }}
       />
     </Tabs>
   );

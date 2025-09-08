@@ -1,0 +1,18 @@
+flowchart TD
+  %% List
+  T1[GET /txs] --> T2[If owner, filter by userId]
+  T2 --> T3[find and sort by _id desc]
+  T3 --> T4{ym query provided?}
+  T4 -->|No| T6[Return list]
+  T4 -->|Yes| T5[Filter where ymKey of date equals ym]
+  T5 --> T6
+
+  %% Create
+  TP1[POST /txs] --> TP2[Validate type, amount, date]
+  TP2 --> TP3[Insert with user scope if owner]
+  TP3 --> TP4[Return tx]
+
+  %% Delete
+  TD1[DELETE /txs/:id] --> TD2[Filter by _id and user scope]
+  TD2 --> TD3[Delete]
+  TD3 --> TD4[Return ok]

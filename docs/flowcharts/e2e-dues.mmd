@@ -1,0 +1,9 @@
+flowchart TD
+  A[Create Member] --> B[Generate Bills for month]
+  B --> C[List Bills for month]
+  C --> D[Mark Bulk Paid]
+  D --> E[Update bill status to PAID]
+  D --> F[Insert transactions type in for members]
+  F --> G[List Transactions for month]
+  E --> H[Month overview updated]
+

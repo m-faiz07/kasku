@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { View, Text, TextInput, Pressable, FlatList, Modal, Platform, ScrollView } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { fs, hs, vs, ms } from "../../lib/responsive";
 import { useClassStore } from "../../lib/classStore";
 import { ymKey } from "../../lib/format";
 // Custom wheel-like pickers tanpa dependensi eksternal
@@ -15,8 +16,8 @@ function Check({ checked, onPress }: { checked: boolean; onPress: () => void }) 
       accessibilityState={{ checked }}
       accessibilityLabel={checked ? "Batalkan pilihan" : "Pilih tagihan"}
       style={{
-        width: 22,
-        height: 22,
+        width: hs(20),
+        height: hs(20),
         borderRadius: 6,
         borderWidth: 2,
         borderColor: checked ? "#111827" : "#9ca3af",
@@ -112,7 +113,7 @@ export default function DuesScreen() {
     clearSelection();
   };
 
-  const ITEM_HEIGHT = 44;
+  const ITEM_HEIGHT = Math.round(vs(44));
   function WheelColumn({ values, value, onChange, labelFor }: { values: string[]; value: string; onChange: (v: string) => void; labelFor?: (v: string) => string }) {
     const initialIndex = Math.max(0, values.findIndex((d) => d === value));
     return (
@@ -131,7 +132,7 @@ export default function DuesScreen() {
         <View style={{ height: ITEM_HEIGHT * 2 }} />
         {values.map((d) => (
           <View key={d} style={{ height: ITEM_HEIGHT, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ fontSize: 18, color: d === value ? "#111827" : "#9ca3af", fontWeight: d === value ? "800" : "600" }}>{labelFor ? labelFor(d) : d}</Text>
+            <Text style={{ fontSize: fs(18), color: d === value ? "#111827" : "#9ca3af", fontWeight: d === value ? "800" : "600" }}>{labelFor ? labelFor(d) : d}</Text>
           </View>
         ))}
         <View style={{ height: ITEM_HEIGHT * 2 }} />
@@ -146,19 +147,19 @@ export default function DuesScreen() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={{ padding: 16 }}>
-            <Text style={{ fontSize: 20, fontWeight: "800", marginBottom: 12 }}>Iuran</Text>
+            <Text style={{ fontSize: fs(20), fontWeight: "800", marginBottom: 12 }}>Iuran</Text>
 
             <View style={{ backgroundColor: "white", borderRadius: 12, padding: 12, marginBottom: 12 }}>
-              <Text style={{ fontWeight: "700", marginBottom: 8 }}>Nominal Iuran per Bulan</Text>
+              <Text style={{ fontWeight: "700", marginBottom: 8, fontSize: fs(14) }}>Nominal Iuran per Bulan</Text>
               <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
                 <TextInput
                   placeholder="Contoh: 20000"
                   inputMode="numeric"
                   value={amountInput}
                   onChangeText={setAmountInput}
-                  style={{ flex: 1, backgroundColor: "#f9fafb", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 }}
+                  style={{ flex: 1, backgroundColor: "#f9fafb", borderRadius: 8, paddingHorizontal: ms(12), paddingVertical: ms(10) }}
                 />
-                <Pressable accessibilityRole="button" accessibilityLabel="Simpan nominal iuran" onPress={onSaveAmount} style={{ backgroundColor: "#111827", paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10 }}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Simpan nominal iuran" onPress={onSaveAmount} style={{ backgroundColor: "#111827", paddingVertical: ms(10), paddingHorizontal: ms(14), borderRadius: 10 }}>
                   <Text style={{ color: "white", fontWeight: "700" }}>Simpan</Text>
                 </Pressable>
               </View>
@@ -167,10 +168,10 @@ export default function DuesScreen() {
             <View style={{ backgroundColor: "white", borderRadius: 12, padding: 12, marginBottom: 12 }}>
               <Text style={{ fontWeight: "700", marginBottom: 8 }}>Bulan</Text>
               <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-                <Pressable onPress={() => { const d = pickerDate; setTempYear(d.getFullYear()); setTempMonth(String(d.getMonth()+1).padStart(2, "0")); setShowPicker(true); }} style={{ flex: 1, backgroundColor: "#f9fafb", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 12 }}>
+                <Pressable onPress={() => { const d = pickerDate; setTempYear(d.getFullYear()); setTempMonth(String(d.getMonth()+1).padStart(2, "0")); setShowPicker(true); }} style={{ flex: 1, backgroundColor: "#f9fafb", borderRadius: 8, paddingHorizontal: ms(12), paddingVertical: ms(12) }}>
                   <Text style={{ fontWeight: "700", color: "#111827" }}>{`${MONTH_NAMES[pickerDate.getMonth()]} ${pickerDate.getFullYear()}`}</Text>
                 </Pressable>
-                <Pressable accessibilityRole="button" accessibilityLabel="Generate tagihan bulan ini" onPress={onGenerate} style={{ backgroundColor: "#111827", paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10 }}>
+                <Pressable accessibilityRole="button" accessibilityLabel="Generate tagihan bulan ini" onPress={onGenerate} style={{ backgroundColor: "#111827", paddingVertical: ms(10), paddingHorizontal: ms(14), borderRadius: 10 }}>
                   <Text style={{ color: "white", fontWeight: "700" }}>Generate Tagihan</Text>
                 </Pressable>
               </View>
@@ -203,14 +204,14 @@ export default function DuesScreen() {
                       ) : (
                         <View>
                           <View style={{ marginBottom: 10 }}>
-                            <Text style={{ color: "#6b7280", marginBottom: 6 }}>Tahun</Text>
+                            <Text style={{ color: "#6b7280", marginBottom: 6, fontSize: fs(14) }}>Tahun</Text>
                             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                               {(() => {
                                 const base = new Date().getFullYear();
                                 const years = [base - 2, base - 1, base, base + 1, base + 2];
                                 return years.map((y) => (
-                                  <Pressable key={y} onPress={() => setTempYear(y)} style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: tempYear === y ? "#111827" : "#e5e7eb" }}>
-                                    <Text style={{ color: tempYear === y ? "white" : "#111827", fontWeight: "700" }}>{y}</Text>
+                                  <Pressable key={y} onPress={() => setTempYear(y)} style={{ paddingVertical: ms(8), paddingHorizontal: ms(12), borderRadius: 8, backgroundColor: tempYear === y ? "#111827" : "#e5e7eb" }}>
+                                    <Text style={{ color: tempYear === y ? "white" : "#111827", fontWeight: "700", fontSize: fs(14) }}>{y}</Text>
                                   </Pressable>
                                 ));
                               })()}
@@ -220,8 +221,8 @@ export default function DuesScreen() {
                             <Text style={{ color: "#6b7280", marginBottom: 6 }}>Bulan</Text>
                             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                               {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map((m, idx) => (
-                                <Pressable key={m} onPress={() => setTempMonth(m)} style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: tempMonth === m ? "#111827" : "#e5e7eb" }}>
-                                  <Text style={{ color: tempMonth === m ? "white" : "#111827", fontWeight: "700" }}>{MONTH_NAMES[idx]}</Text>
+                                <Pressable key={m} onPress={() => setTempMonth(m)} style={{ paddingVertical: ms(8), paddingHorizontal: ms(12), borderRadius: 8, backgroundColor: tempMonth === m ? "#111827" : "#e5e7eb" }}>
+                                  <Text style={{ color: tempMonth === m ? "white" : "#111827", fontWeight: "700", fontSize: fs(14) }}>{MONTH_NAMES[idx]}</Text>
                                 </Pressable>
                               ))}
                             </View>
@@ -229,7 +230,7 @@ export default function DuesScreen() {
                         </View>
                       )}
                       <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 12 }}>
-                        <Pressable accessibilityRole="button" accessibilityLabel="Tutup pemilih bulan" onPress={() => setShowPicker(false)} style={{ paddingVertical: 10, paddingHorizontal: 14 }}>
+                        <Pressable accessibilityRole="button" accessibilityLabel="Tutup pemilih bulan" onPress={() => setShowPicker(false)} style={{ paddingVertical: ms(10), paddingHorizontal: ms(14) }}>
                           <Text style={{ color: "#6b7280", fontWeight: "700" }}>Batal</Text>
                         </Pressable>
                         <Pressable
@@ -241,7 +242,7 @@ export default function DuesScreen() {
                             setYm(ymKey(normalized));
                             setShowPicker(false);
                           }}
-                          style={{ backgroundColor: "#111827", paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10 }}
+                          style={{ backgroundColor: "#111827", paddingVertical: ms(10), paddingHorizontal: ms(14), borderRadius: 10 }}
                         >
                           <Text style={{ color: "white", fontWeight: "700" }}>Selesai</Text>
                         </Pressable>
@@ -254,8 +255,8 @@ export default function DuesScreen() {
 
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <Text style={{ color: "#6b7280" }}>Ringkasan: {counts.total} total · {counts.unpaid} UNPAID · {counts.paid} PAID</Text>
-              <Pressable accessibilityRole="button" accessibilityLabel="Pilih semua tagihan UNPAID" onPress={selectAllUnpaid} style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8, backgroundColor: "#e5e7eb" }}>
-                <Text style={{ fontWeight: "700", color: "#111827" }}>Pilih semua UNPAID</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel="Pilih semua tagihan belum lunas" onPress={selectAllUnpaid} style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8, backgroundColor: "#e5e7eb" }}>
+                <Text style={{ fontWeight: "700", color: "#111827" }}>Pilih semua Belum Lunas</Text>
               </Pressable>
             </View>
           </View>
@@ -267,7 +268,7 @@ export default function DuesScreen() {
                 <Check checked={!!selection[item.memberId]} onPress={() => toggleSelect(item.memberId)} />
               </View>
             ) : (
-              <View style={{ width: 22, height: 22, marginRight: 12 }} />
+              <View style={{ width: hs(20), height: hs(20), marginRight: 12 }} />
             )}
 
             <View style={{ flex: 1 }}>
@@ -277,7 +278,9 @@ export default function DuesScreen() {
 
             <View style={{ alignItems: "flex-end" }}>
               <View style={{ alignSelf: "flex-end", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: item.status === "PAID" ? "#d1fae5" : item.status === "WAIVED" ? "#e0e7ff" : "#fee2e2" }}>
-                <Text style={{ color: item.status === "PAID" ? "#065f46" : item.status === "WAIVED" ? "#3730a3" : "#991b1b", fontWeight: "700", fontSize: 12 }}>{item.status}</Text>
+                <Text style={{ color: item.status === "PAID" ? "#065f46" : item.status === "WAIVED" ? "#3730a3" : "#991b1b", fontWeight: "700", fontSize: fs(12) }}>
+                  {item.status === "PAID" ? "LUNAS" : item.status === "WAIVED" ? "DIBEBASKAN" : "BELUM LUNAS"}
+                </Text>
               </View>
             </View>
           </View>
@@ -297,9 +300,9 @@ export default function DuesScreen() {
               accessibilityLabel="Tandai lunas untuk item terpilih"
               onPress={onBulkPaid}
               disabled={!billsForCurrentMonth.some((b) => b.status === "UNPAID" && selection[b.memberId])}
-              style={{ backgroundColor: billsForCurrentMonth.some((b) => b.status === "UNPAID" && selection[b.memberId]) ? "#111827" : "#9ca3af", paddingVertical: 12, borderRadius: 10, alignItems: "center", marginTop: 4 }}
+              style={{ backgroundColor: billsForCurrentMonth.some((b) => b.status === "UNPAID" && selection[b.memberId]) ? "#111827" : "#9ca3af", paddingVertical: ms(12), borderRadius: 10, alignItems: "center", marginTop: 4 }}
             >
-              <Text style={{ color: "white", fontWeight: "700" }}>Tandai Lunas (Bulk)</Text>
+              <Text style={{ color: "white", fontWeight: "700" }}>Tandai Lunas (Massal)</Text>
             </Pressable>
           </View>
         }
@@ -307,5 +310,3 @@ export default function DuesScreen() {
     </SafeAreaView>
   );
 }
-
-

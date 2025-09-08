@@ -17,7 +17,7 @@ export type DuesBill = { id: string; memberId: string; ym: string; amount: numbe
 
 const DEFAULT_BASE = "http://localhost:4000";
 
-function getBaseUrl(): string {
+export function getBaseUrl(): string {
   // Option A: Expo extra
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -31,18 +31,40 @@ function getBaseUrl(): string {
   return normalizeBase(pub || DEFAULT_BASE);
 }
 
+let AUTH_TOKEN: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  AUTH_TOKEN = token;
+}
+
+export class HttpError extends Error {
+  status: number;
+  data?: any;
+  constructor(status: number, message: string, data?: any) {
+    super(message);
+    this.status = status;
+    this.data = data;
+  }
+}
+
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${getBaseUrl()}${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...(getApiKeyHeader()),
+      ...(AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {}),
       ...(init?.headers || {}),
     },
     ...init,
   });
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}: ${txt || res.statusText}`);
+    // Try parse JSON error for a friendly message
+    let data: any = null;
+    try { data = await res.json(); } catch {
+      try { const txt = await res.text(); data = txt; } catch {}
+    }
+    const msg = (data && typeof data === 'object' ? (data.message || data.error) : undefined) || res.statusText || 'Request failed';
+    throw new HttpError(res.status, msg, data);
   }
   return (await res.json()) as T;
 }
@@ -76,6 +98,15 @@ function normalizeBase(raw: string): string {
 
 // Members
 export const api = {
+  // Auth
+  login: (email: string, password: string) => fetchJson<{ token: string; user: { id: string; email: string; name?: string; avatar?: string } }>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+  register: (email: string, password: string, name?: string) => fetchJson<{ token: string; user: { id: string; email: string; name?: string; avatar?: string } }>("/auth/register", { method: "POST", body: JSON.stringify({ email, password, name }) }),
+  getMe: () => fetchJson<{ id: string; email: string; name?: string; avatar?: string }>("/me"),
+  updateMe: (name: string) => fetchJson<{ id: string; email: string; name?: string; avatar?: string }>("/me", { method: "PATCH", body: JSON.stringify({ name }) }),
+  updatePassword: (oldPassword: string, newPassword: string) => fetchJson<{ ok: true }>("/me/password", { method: "PATCH", body: JSON.stringify({ oldPassword, newPassword }) }),
+  uploadAvatar: (imageDataUrl: string) => fetchJson<{ avatarUrl: string }>("/me/avatar", { method: "POST", body: JSON.stringify({ image: imageDataUrl }) }),
+  updateEmail: (email: string, password: string) => fetchJson<{ token: string; user: { id: string; email: string; name?: string; avatar?: string } }>("/me/email", { method: "PATCH", body: JSON.stringify({ email, password }) }),
+
   // Members
   getMembers: () => fetchJson<Member[]>("/members"),
   addMember: (name: string, nim?: string, phone?: string) => fetchJson<Member>("/members", { method: "POST", body: JSON.stringify({ name, nim, phone }) }),
@@ -95,4 +126,5 @@ export const api = {
   getTxs: (ym?: string) => fetchJson<Tx[]>(ym ? `/txs?ym=${encodeURIComponent(ym)}` : "/txs"),
   addTx: (t: Omit<Tx, "id">) => fetchJson<Tx>("/txs", { method: "POST", body: JSON.stringify(t) }),
   deleteTx: (id: string) => fetchJson<{ ok: true }>(`/txs/${id}`, { method: "DELETE" }),
+  setAuthToken,
 };

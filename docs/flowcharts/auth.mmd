@@ -1,0 +1,22 @@
+flowchart TD
+  subgraph Register
+    AR1[POST /auth/register] --> AR2[Validate email,password,name]
+    AR2 --> AR3{Email exists?}
+    AR3 -->|Yes| AR4[409 Email sudah terdaftar]
+    AR3 -->|No| AR5[Hash password]
+    AR5 --> AR6[Insert user]
+    AR6 --> AR7[Sign JWT]
+    AR7 --> AR8[Return token + user]
+  end
+
+  subgraph Login
+    AL1[POST /auth/login] --> AL2[Validate email,password]
+    AL2 --> AL3{User found?}
+    AL3 -->|No| AL4[404 Email belum terdaftar]
+    AL3 -->|Yes| AL5[Compare password]
+    AL5 --> AL6{Match?}
+    AL6 -->|No| AL7[401 Kata sandi salah]
+    AL6 -->|Yes| AL8[Sign JWT]
+    AL8 --> AL9[Return token + user]
+  end
+

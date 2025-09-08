@@ -1,8 +1,10 @@
 // lib/classStore.ts
 import { create } from "zustand";
+import { Alert } from "react-native";
 import { ymKey } from "./format";
 import { useStore } from "./store";
 import { api } from "./api";
+import { useToast } from "./toast";
 
 export type Member = { id: string; name: string; nim?: string; phone?: string; active: boolean };
 
@@ -48,20 +50,38 @@ export const useClassStore = create<ClassState>()((set, get) => ({
   },
   addMember: (name, nim, phone) => {
     void (async () => {
-      const m = await api.addMember(name, nim, phone);
-      set((s) => ({ members: [m, ...s.members] }));
+      try {
+        const m = await api.addMember(name, nim, phone);
+        set((s) => ({ members: [m, ...s.members] }));
+        useToast.getState().success("Anggota ditambahkan");
+      } catch (e: any) {
+        console.error("addMember failed", e);
+        Alert.alert("Gagal menambah anggota", e?.message || "Tidak dapat terhubung ke server.");
+      }
     })();
   },
   updateMember: (id, patch) => {
     void (async () => {
-      const m = await api.updateMember(id, patch);
-      set((s) => ({ members: s.members.map((x) => (x.id === id ? m : x)) }));
+      try {
+        const m = await api.updateMember(id, patch);
+        set((s) => ({ members: s.members.map((x) => (x.id === id ? m : x)) }));
+        useToast.getState().success("Perubahan disimpan");
+      } catch (e: any) {
+        console.error("updateMember failed", e);
+        Alert.alert("Gagal memperbarui anggota", e?.message || "Tidak dapat terhubung ke server.");
+      }
     })();
   },
   removeMember: (id) => {
     void (async () => {
-      await api.removeMember(id);
-      set((s) => ({ members: s.members.filter((m) => m.id !== id), bills: s.bills.filter((b) => b.memberId !== id) }));
+      try {
+        await api.removeMember(id);
+        set((s) => ({ members: s.members.filter((m) => m.id !== id), bills: s.bills.filter((b) => b.memberId !== id) }));
+        useToast.getState().success("Anggota dihapus");
+      } catch (e: any) {
+        console.error("removeMember failed", e);
+        Alert.alert("Gagal menghapus anggota", e?.message || "Tidak dapat terhubung ke server.");
+      }
     })();
   },
 

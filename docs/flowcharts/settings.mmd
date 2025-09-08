@@ -1,0 +1,16 @@
+flowchart TD
+  %% Get dues amount
+  S1[GET /dues/amount] --> S2{owner?}
+  S2 -->|Yes| S3[Find settings by userId]
+  S2 -->|No| S4[Find global settings by fixed _id]
+  S3 --> S5
+  S4 --> S5
+  S5[duesAmount equals value or 20000] --> S6[Return duesAmount]
+
+  %% Update dues amount
+  SS1[POST /dues/amount] --> SS2[Validate amount >= 0]
+  SS2 --> SS3{owner?}
+  SS3 -->|Yes| SS4[Update settings by userId with upsert]
+  SS3 -->|No| SS5[Update global settings by fixed _id with upsert]
+  SS4 --> SS6[Return duesAmount]
+  SS5 --> SS6

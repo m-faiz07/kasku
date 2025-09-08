@@ -1,0 +1,17 @@
+flowchart TD
+  BG1[POST /bills/generate] --> BG2[Determine ym from request or current month]
+  BG2 --> BG3{owner?}
+  BG3 -->|Yes| BG4[Get duesAmount from settings by userId]
+  BG3 -->|No| BG5[Get global settings by fixed _id]
+  BG4 --> BG6
+  BG5 --> BG6
+  BG6[duesAmount = value or 20000 default] --> BG7[memFilter active true and user scope if owner]
+  BG7 --> BG8[Load active members]
+  BG8 --> BG9{For each member}
+  BG9 --> BG10[Find bill by memberId and ym with user scope]
+  BG10 --> BG11{Exists?}
+  BG11 -->|Yes| BG9
+  BG11 -->|No| BG12[Insert UNPAID bill amount=duesAmount]
+  BG12 --> BG9
+  BG9 -->|done| BG13[Find bills by ym with user scope]
+  BG13 --> BG14[Return list]

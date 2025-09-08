@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useStore } from "../../lib/store";
 import { toIDR } from "../../lib/format";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { fs, ms } from "../../lib/responsive";
 
 export default function Add() {
   const { addTx, totals } = useStore();
@@ -32,7 +33,6 @@ export default function Add() {
 
     addTx({ type, amount: parsed, category: category || "Umum", note, date: date.toISOString() });
     setAmount(""); setCategory(""); setNote("");
-    Alert.alert("Tersimpan", "Transaksi ditambahkan");
   };
 
   return (
@@ -45,7 +45,7 @@ export default function Add() {
           <Segment value={type} onChange={setType} />
 
           <Field label="Nominal" keyboardType="numeric" value={amount} onChangeText={setAmount} placeholder="cth: 50000" />
-          <Text style={{ color: "#6b7280", marginTop: -6 }}>Pratinjau: {pretty}</Text>
+          <Text style={{ color: "#6b7280", marginTop: -6, fontSize: fs(12) }}>Pratinjau: {pretty}</Text>
 
           <Text style={{ marginTop: -2, color: overLimit ? "#dc2626" : "#6b7280", fontWeight: overLimit ? "700" as const : "400" }}>
             Sisa saldo: {toIDR(available)}
@@ -59,10 +59,10 @@ export default function Add() {
             accessibilityRole="button"
             accessibilityLabel="Pilih tanggal transaksi"
             onPress={() => setShowPicker(true)}
-            style={{ backgroundColor: "white", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "#e5e7eb" }}
+            style={{ backgroundColor: "white", borderRadius: 12, padding: ms(12), borderWidth: 1, borderColor: "#e5e7eb" }}
           >
-            <Text style={{ fontWeight: "700" }}>Tanggal</Text>
-            <Text style={{ color: "#111827", marginTop: 6 }}>{date.toLocaleString("id-ID")}</Text>
+            <Text style={{ fontWeight: "700", fontSize: fs(14) }}>Tanggal</Text>
+            <Text style={{ color: "#111827", marginTop: 6, fontSize: fs(14) }}>{date.toLocaleString("id-ID")}</Text>
           </Pressable>
 
           {showPicker && (
@@ -76,12 +76,12 @@ export default function Add() {
             disabled={overLimit}
             style={{
               backgroundColor: overLimit ? "#9ca3af" : "#111827",
-              padding: 14,
+              padding: ms(14),
               borderRadius: 12,
               opacity: overLimit ? 0.9 : 1,
             }}
           >
-            <Text style={{ textAlign: "center", color: "white", fontWeight: "700" }}>
+            <Text style={{ textAlign: "center", color: "white", fontWeight: "700", fontSize: fs(16) }}>
               {overLimit ? "Saldo tidak cukup" : "Simpan"}
             </Text>
           </Pressable>
@@ -96,14 +96,14 @@ type FieldProps = TextInputProps & { label: string };
 function Field(props: FieldProps) {
   return (
     <View style={{ gap: 6 }}>
-      <Text style={{ fontWeight: "700" }}>{props.label}</Text>
+      <Text style={{ fontWeight: "700", fontSize: fs(14) }}>{props.label}</Text>
       <TextInput
         {...props}
         style={{
           backgroundColor: "white",
           borderRadius: 12,
-          paddingHorizontal: 12,
-          paddingVertical: 12,
+          paddingHorizontal: ms(12),
+          paddingVertical: ms(12),
           borderWidth: 1,
           borderColor: "#e5e7eb",
         }}
@@ -114,7 +114,7 @@ function Field(props: FieldProps) {
 
 function Segment({ value, onChange }: { value: "in" | "out"; onChange: (v: "in" | "out") => void }) {
   return (
-    <View style={{ flexDirection: "row", backgroundColor: "#e5e7eb", borderRadius: 12, padding: 4 }}>
+    <View style={{ flexDirection: "row", backgroundColor: "#e5e7eb", borderRadius: 12, padding: ms(4) }}>
       {(["in", "out"] as const).map((v) => (
         <Pressable
           key={v}
@@ -122,10 +122,10 @@ function Segment({ value, onChange }: { value: "in" | "out"; onChange: (v: "in" 
           accessibilityLabel={v === "in" ? "Pilih transaksi masuk" : "Pilih transaksi keluar"}
           onPress={() => onChange(v)}
           style={{
-            flex: 1, paddingVertical: 10, borderRadius: 10,
+            flex: 1, paddingVertical: ms(10), borderRadius: 10,
             backgroundColor: value === v ? "#111827" : "transparent",
           }}>
-          <Text style={{ textAlign: "center", color: value === v ? "white" : "#111827", fontWeight: "700" }}>
+          <Text style={{ textAlign: "center", color: value === v ? "white" : "#111827", fontWeight: "700", fontSize: fs(14) }}>
             {v === "in" ? "Masuk" : "Keluar"}
           </Text>
         </Pressable>
@@ -133,4 +133,3 @@ function Segment({ value, onChange }: { value: "in" | "out"; onChange: (v: "in" 
     </View>
   );
 }
-

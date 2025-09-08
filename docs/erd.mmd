@@ -1,0 +1,56 @@
+erDiagram
+  USERS {
+    string _id
+    string email
+    string name
+    string avatar
+    string passwordHash
+    string createdAt
+  }
+
+  MEMBERS {
+    string _id
+    string name
+    string nim
+    string phone
+    boolean active
+    string userId
+  }
+
+  BILLS {
+    string _id
+    string memberId
+    string ym
+    int amount
+    string status
+    string userId
+  }
+
+  TXS {
+    string _id
+    string type
+    int amount
+    string category
+    string note
+    string date
+    string memberId
+    string userId
+  }
+
+  SETTINGS {
+    string _id
+    int duesAmount
+    string userId
+  }
+
+  USERS ||--o{ MEMBERS : owns
+  MEMBERS ||--o{ BILLS : billed_for
+  USERS ||--o{ BILLS : scopes
+  USERS ||--o{ TXS : scopes
+  MEMBERS ||--o{ TXS : related_to
+  USERS ||--o| SETTINGS : has
+
+%% Notes:
+%% - Unique index on BILLS(memberId, ym)
+%% - SETTINGS can be global (no userId, fixed _id) when multi-tenant disabled
+%% - API returns "id" (string) derived from MongoDB _id

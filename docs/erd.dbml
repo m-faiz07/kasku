@@ -1,0 +1,59 @@
+Project "Kasku" {
+  database_type: "MongoDB"
+}
+
+Table users {
+  _id objectid [pk]
+  email varchar [unique]
+  name varchar
+  avatar varchar
+  passwordHash varchar
+  createdAt varchar // ISO string
+}
+
+Table members {
+  _id objectid [pk]
+  userId objectid [ref: > users._id]
+  name varchar
+  nim varchar
+  phone varchar
+  active boolean
+}
+
+Table bills {
+  _id objectid [pk]
+  userId objectid [ref: > users._id]
+  memberId objectid [ref: > members._id]
+  ym varchar // YYYY-MM
+  amount int
+  status varchar // UNPAID | PAID | WAIVED
+
+  Indexes {
+    (memberId, ym) [unique]
+  }
+}
+
+Table txs {
+  _id objectid [pk]
+  userId objectid [ref: > users._id]
+  type varchar // in | out
+  amount int
+  category varchar
+  note varchar
+  date varchar // ISO string
+  memberId objectid [ref: > members._id]
+}
+
+Table settings {
+  _id objectid [pk]
+  userId objectid [ref: > users._id]
+  duesAmount int
+}
+
+Ref: users._id < members.userId
+Ref: members._id < bills.memberId
+Ref: users._id < bills.userId
+Ref: users._id < txs.userId
+Ref: members._id < txs.memberId
+Ref: users._id < settings.userId
+

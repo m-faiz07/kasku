@@ -1,0 +1,23 @@
+flowchart TD
+  A[Client Request] --> B{Path}
+  B -->|/uploads/*| U[Serve static from uploads]
+  U --> Z[Response]
+  B -->|/health| H[/Health handler/]
+  H --> Z
+  B -->|/auth/*| K[/Auth routes/]
+  K --> Z
+  B -->|others| C{API_KEY set?}
+  C -->|No| D[Skip API key check]
+  C -->|Yes| E{Header x-api-key equals API_KEY?}
+  E -->|No| F[401 Unauthorized]
+  E -->|Yes| D
+  D --> J[Parse Bearer JWT if present]
+  J --> L{REQUIRE_AUTH is true?}
+  L -->|No| M[Proceed to route handler]
+  L -->|Yes| N{Has valid JWT?}
+  N -->|No| F
+  N -->|Yes| M
+  M --> P[Execute controller]
+  P -->|OK| Z
+  P -->|Error| S[Global Error Handler]
+  S --> Z

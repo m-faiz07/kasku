@@ -1,0 +1,27 @@
+flowchart TD
+  %% List
+  M1[GET /members] --> M2[owner = req.user sub]
+  M2 --> M3[Query by userId if owner]
+  M3 --> M4[find and sort by _id desc]
+  M4 --> M5[map toId]
+  M5 --> M6[Return list]
+
+  %% Create
+  M7[POST /members] --> MV[Validate body]
+  MV --> MD[Build doc active=true + userId?]
+  MD --> MI[Insert]
+  MI --> MR[Return new member]
+
+  %% Update
+  MP1[PATCH /members/:id] --> MP2[Validate fields]
+  MP2 --> MP3[Filter by _id and user scope]
+  MP3 --> MP4[findOneAndUpdate]
+  MP4 --> MP5{Found?}
+  MP5 -->|No| MP6[404 Not found]
+  MP5 -->|Yes| MP7[Return updated]
+
+  %% Delete (cascade bills)
+  MD1[DELETE /members/:id] --> MD2[Filter bills by memberId and user scope]
+  MD2 --> MD3[Delete related bills]
+  MD3 --> MD4[Delete member by _id + userId?]
+  MD4 --> MD5[Return ok]

@@ -1,0 +1,12 @@
+flowchart TD
+  BB1[POST /bills/bulkPaid] --> BB2[Validate memberIds array and ym]
+  BB2 --> BB3[Load members by ids with user scope if owner]
+  BB3 --> BB4{For each memberId}
+  BB4 --> BB5[Find bill by memberId and ym with user scope]
+  BB5 --> BB6{Bill status is UNPAID?}
+  BB6 -->|No| BB4
+  BB6 -->|Yes| BB7[Update status to PAID]
+  BB7 --> BB8[Insert tx: type in, amount=bill.amount, category Iuran, note, date now, memberId, user scope]
+  BB8 --> BB4
+  BB4 -->|done| BB9[Find bills by ym with user scope]
+  BB9 --> BB10[Return list]

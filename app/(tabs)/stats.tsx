@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import { useStore } from "../../lib/store";
 import { toIDR } from "../../lib/format";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { fs, ms } from "../../lib/responsive";
+import { useAuth } from "../../lib/auth";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
@@ -11,6 +13,7 @@ export default function Stats() {
   const tAll = totals();
   const insets = useSafeAreaInsets();
   const [savedPath, setSavedPath] = useState<string | null>(null);
+  const { logout } = useAuth();
 
   const safeAllBalance = Math.max(0, tAll.balance);
 
@@ -43,7 +46,7 @@ export default function Stats() {
       if (canShare) {
         await Sharing.shareAsync(fileUri, {
           mimeType: Platform.OS === "android" ? "text/csv" : undefined,
-          dialogTitle: "Export Transaksi (CSV)",
+          dialogTitle: "Ekspor Transaksi (CSV)",
           UTI: "public.comma-separated-values-text",
         });
       } else {
@@ -62,24 +65,30 @@ export default function Stats() {
         <Card title="Total Keluar">{toIDR(tAll.out)}</Card>
         <Card title="Saldo Total">{toIDR(safeAllBalance)}</Card>
         <View style={{ backgroundColor: "white", padding: 16, borderRadius: 16 }}>
-          <Text style={{ fontWeight: "700", marginBottom: 8 }}>Export</Text>
+          <Text style={{ fontWeight: "700", marginBottom: 8, fontSize: fs(14) }}>Ekspor</Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Export transaksi ke file CSV"
+            accessibilityLabel="Ekspor transaksi ke file CSV"
             onPress={onExport}
             disabled={!canExport}
-            style={{ backgroundColor: canExport ? "#111827" : "#9ca3af", paddingVertical: 12, borderRadius: 10, alignItems: "center" }}
+            style={{ backgroundColor: canExport ? "#111827" : "#9ca3af", paddingVertical: ms(12), borderRadius: 10, alignItems: "center" }}
           >
-            <Text style={{ color: "white", fontWeight: "700" }}>Export CSV</Text>
+            <Text style={{ color: "white", fontWeight: "700", fontSize: fs(14) }}>Ekspor CSV</Text>
           </Pressable>
           {!canExport && (
-            <Text style={{ color: "#6b7280", marginTop: 8 }}>Belum ada transaksi untuk diekspor.</Text>
+            <Text style={{ color: "#6b7280", marginTop: 8, fontSize: fs(12) }}>Belum ada transaksi untuk diekspor.</Text>
           )}
           {!!savedPath && (
-            <Text style={{ color: "#6b7280", marginTop: 8 }}>Lokasi file: {savedPath}</Text>
+            <Text style={{ color: "#6b7280", marginTop: 8, fontSize: fs(12) }}>Lokasi file: {savedPath}</Text>
           )}
         </View>
-        <Text style={{ color: "#6b7280", marginTop: 12 }}>
+        <View style={{ backgroundColor: "white", padding: 16, borderRadius: 16 }}>
+          <Text style={{ fontWeight: "700", marginBottom: 8, fontSize: fs(14) }}>Akun</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Keluar" onPress={logout} style={{ backgroundColor: "#dc2626", paddingVertical: ms(12), borderRadius: 10, alignItems: "center" }}>
+            <Text style={{ color: "white", fontWeight: "700", fontSize: fs(14) }}>Keluar</Text>
+          </Pressable>
+        </View>
+        <Text style={{ color: "#6b7280", marginTop: 12, fontSize: fs(12) }}>
           Tip: pakai kategori berbeda untuk Kas Kelas vs Pribadi (nanti bisa dibuat multi-buku).
         </Text>
       </ScrollView>
@@ -90,8 +99,8 @@ export default function Stats() {
 function Card({ title, children }: { title: string; children: any }) {
   return (
     <View style={{ backgroundColor: "white", padding: 16, borderRadius: 16, shadowColor: "#000", shadowOpacity: 0.05, elevation: 2 }}>
-      <Text style={{ color: "#6b7280" }}>{title}</Text>
-      <Text style={{ fontSize: 24, fontWeight: "800", marginTop: 6 }}>{children}</Text>
+      <Text style={{ color: "#6b7280", fontSize: fs(12) }}>{title}</Text>
+      <Text style={{ fontSize: fs(22), fontWeight: "800", marginTop: 6 }}>{children}</Text>
     </View>
   );
 }

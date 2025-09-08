@@ -1,0 +1,25 @@
+flowchart LR
+  subgraph Client
+    CL[Mobile App]
+  end
+
+  subgraph API[Express API]
+    MW[Middlewares CORS JSON Logging]
+    RT[Routes Members Bills Txs Settings Profile]
+    AU[Auth Register Login JWT]
+    ST[Static Uploads]
+  end
+
+  subgraph Data
+    DB[MongoDB users members bills txs settings]
+    FS[Uploads avatars]
+  end
+
+  CL -->|HTTP requests| MW
+  MW --> RT
+  CL -->|Auth calls| AU
+  AU --> RT
+  RT --> DB
+  RT --> FS
+  CL -->|GET files| FS
+

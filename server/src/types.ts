@@ -35,3 +35,11 @@ export function ymKey(d: Date | string): string {
   return `${y}-${m}`;
 }
 
+export type User = {
+  id: string;
+  email: string;
+  name?: string;
+  avatar?: string;
+  passwordHash: string;
+  createdAt: string; // ISO
+};
